@@ -63,15 +63,15 @@ void positionPrint() {
 
 // driver control, control drivetrain
 void driverDriver() {
-	rightMotors.move(127);
-	leftMotors.move(127);
+	rightMotors.move(200);
+	leftMotors.move(200);
 
 	rightMotors.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 	leftMotors.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 
 	while(true) {
-		rightMotors.move_velocity(masterCont.get_analog(ANALOG_LEFT_Y) - masterCont.get_analog(ANALOG_RIGHT_X));
-		leftMotors.move_velocity(masterCont.get_analog(ANALOG_LEFT_Y) + masterCont.get_analog(ANALOG_RIGHT_X));
+		rightMotors.move_velocity((masterCont.get_analog(ANALOG_LEFT_Y)*1.575) - (masterCont.get_analog(ANALOG_RIGHT_X)*1.575));
+		leftMotors.move_velocity((masterCont.get_analog(ANALOG_LEFT_Y)*1.575) + (masterCont.get_analog(ANALOG_RIGHT_X)*1.575));
 	}
 }
 
