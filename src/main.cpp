@@ -3,9 +3,10 @@
 
 pros::MotorGroup rightMotors({1, 2, 3}, pros::MotorGearset::green); // right motors, green inserts
 pros::MotorGroup leftMotors({-4, -6, -7}, pros::MotorGearset::green); // left motors, green inserts, reversed
-pros::adi::DigitalOut mogoClamp('A');
+pros::adi::DigitalOut mogoClamp('H');
 pros::Imu imu(20);
 pros::Controller masterCont(CONTROLLER_MASTER);
+pros::MotorGroup conveyor({-9, 10}, pros::MotorGearset::green); // conveyor motors, green inserts
 
 lemlib::Drivetrain drivetrain(&leftMotors, // left motor group
 							  &rightMotors, // right motor group
@@ -87,6 +88,24 @@ void driverClamp() {
 	}
 }
 
+// driver control, control intake / conveyor
+void driverHook() {
+	conveyor.move(200);
+
+	while(true) {
+		if(masterCont.get_digital(DIGITAL_L1)) {
+			conveyor.move_velocity(200);
+		} else if(masterCont.get_digital(DIGITAL_L2)) {
+			conveyor.move_velocity(-200);
+		}
+		else {
+			conveyor.move_velocity(0);
+		}
+	}
+
+
+}
+
 // initalize function, runs on program startup
 void initialize() {
 	pros::lcd::initialize(); // initalize brain screen
@@ -106,5 +125,6 @@ void autonomous() {
 
 void opcontrol() {
 	pros::Task ws1(driverClamp);
+	pros::Task ws2(driverHook);
 	driverDriver();
 }
