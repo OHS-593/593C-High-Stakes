@@ -4,6 +4,7 @@
 pros::MotorGroup rightMotors({1, 2, 3}, pros::MotorGearset::green); // right motors, green inserts
 pros::MotorGroup leftMotors({-4, -6, -7}, pros::MotorGearset::green); // left motors, green inserts, reversed
 pros::adi::DigitalOut mogoClamp('H');
+pros::adi::DigitalOut sortClamp('G');
 pros::Imu imu(20);
 pros::Controller masterCont(CONTROLLER_MASTER);
 pros::MotorGroup conveyor({-9, 10}, pros::MotorGearset::green); // conveyor motors, green inserts
@@ -81,10 +82,21 @@ void driverClamp() {
 	mogoClamp.set_value(false);
 	
 	while(true) {
-		waitUntill(masterCont.get_digital_new_press(DIGITAL_R1));
+		waitUntill(masterCont.get_digital_new_press(DIGITAL_L1));
 		mogoClamp.set_value(true);
-		waitUntill(masterCont.get_digital_new_press(DIGITAL_R2));
+		waitUntill(masterCont.get_digital_new_press(DIGITAL_L1));
 		mogoClamp.set_value(false);
+	}
+}
+
+void driverSort() {
+	sortClamp.set_value(false);
+	
+	while(true) {
+		waitUntill(masterCont.get_digital_new_press(DIGITAL_L2));
+		sortClamp.set_value(true);
+		waitUntill(masterCont.get_digital_new_press(DIGITAL_L2));
+		sortClamp.set_value(false);
 	}
 }
 
@@ -93,17 +105,25 @@ void driverHook() {
 	conveyor.move(200);
 
 	while(true) {
-		if(masterCont.get_digital(DIGITAL_L1)) {
+		if(masterCont.get_digital(DIGITAL_R1)) {
 			conveyor.move_velocity(200);
-		} else if(masterCont.get_digital(DIGITAL_L2)) {
+		} else if(masterCont.get_digital(DIGITAL_R2)) {
 			conveyor.move_velocity(-200);
 		}
 		else {
 			conveyor.move_velocity(0);
 		}
 	}
+}
 
-
+// auton drive controlls
+void autonDrive(int h, int j) {
+	rightMotors.move_relative(h, j);
+	leftMotors.move_relative(h, j);
+	// wait until motors reach pos
+	while (!((rightMotors.get_position() < h+5) && (rightMotors.get_position() > h-5))) {
+		pros::delay(1);
+	}
 }
 
 // initalize function, runs on program startup
@@ -120,11 +140,18 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
+	rightMotors.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+	leftMotors.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 
+	autonDrive(-3, 100);
+
+
+	mogoClamp.set_value(true);
 }
 
 void opcontrol() {
 	pros::Task ws1(driverClamp);
-	pros::Task ws2(driverHook);
+	pros::Task ws2(driverSort);
+	pros::Task ws3(driverHook);
 	driverDriver();
 }
