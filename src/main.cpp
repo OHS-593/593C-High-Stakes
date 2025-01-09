@@ -58,7 +58,7 @@ void positionPrint() {
 		pros::lcd::print(0, "X: %f", chassis.getPose().x); // x pos
 		pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y pos
 		pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
-		masterCont.print(0, 0, "X: %f", chassis.getPose().x);
+		// masterCont.print(0, 0, "X: %f", chassis.getPose().x);
 		pros::delay(20);
 	}
 }
@@ -117,12 +117,21 @@ void driverHook() {
 }
 
 // auton drive controlls
-void autonDrive(int h, int j) {
-	rightMotors.move_relative(h, j);
-	leftMotors.move_relative(h, j);
+void autonDrive(float he, float ie, int jv) {
+	leftMotors.tare_position_all();
+	rightMotors.tare_position_all();
+
+	float hd = (he / 360);
+	float id = (ie / 360);
+
+	pros::lcd::print(4, "id: %f", id);
+	pros::lcd::print(5, "ie: %f", ie);
+
+	rightMotors.move_relative(id, jv);
+	leftMotors.move_relative(hd, jv);
 	// wait until motors reach pos
-	while (!((rightMotors.get_position() < h+5) && (rightMotors.get_position() > h-5))) {
-		pros::delay(1);
+	while (!((rightMotors.get_position() < id+0.1) && (rightMotors.get_position() > id-0.1))) {
+		pros::delay(2);
 	}
 }
 
@@ -143,10 +152,24 @@ void autonomous() {
 	rightMotors.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 	leftMotors.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 
-	autonDrive(-3, 100);
+	autonDrive(-600, -600, 50);
 
+	// rightMotors.move_relative(-1.5,50);
+	// leftMotors.move_relative(-1.5,50);
 
 	mogoClamp.set_value(true);
+
+	conveyor.move_relative(2000, 100);
+	pros::delay(1000);
+
+	conveyor.move_relative(20000, 100);
+	autonDrive(330, -330, 50);
+
+	autonDrive(360, 360, 50);
+
+	autonDrive(-600, 600, 50);
+
+	autonDrive(600, 600, 50);
 }
 
 void opcontrol() {
