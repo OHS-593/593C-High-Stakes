@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "593C",
+    "project_name": "593C Left",
     "target": "v5",
     "templates": {
       "kernel": {
@@ -256,7 +256,9 @@
     },
     "upload_options": {
       "description": "Oakdale 593C",
-      "icon": "pizza"
+      "icon": "pizza",
+      "slot": 1,
+      "after": "none"
     },
     "use_early_access": false
   }

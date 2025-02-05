@@ -2,10 +2,10 @@
 #include "lemlib/api.hpp"
 
 pros::MotorGroup rightMotors({1, 2, 3}, pros::MotorGearset::green); // right motors, green inserts
-pros::MotorGroup leftMotors({-4, -6, -7}, pros::MotorGearset::green); // left motors, green inserts, reversed
+pros::MotorGroup leftMotors({-5, -6, -7}, pros::MotorGearset::green); // left motors, green inserts, reversed
 pros::adi::DigitalOut mogoClamp('H');
 pros::adi::DigitalOut sortClamp('G');
-pros::Imu imu(20);
+pros::Imu imu(19);
 pros::Controller masterCont(CONTROLLER_MASTER);
 pros::MotorGroup conveyor({-9, 10}, pros::MotorGearset::green); // conveyor motors, green inserts
 
@@ -36,7 +36,7 @@ lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
 lemlib::ControllerSettings angular_controller(2, // proportional gain (kP)
                                               0, // integral gain (kI)
                                               10, // derivative gain (kD)
-                                              3, // anti windup
+                                             3, // anti windup
                                               1, // small error range, in degrees
                                               100, // small error range timeout, in milliseconds
                                               3, // large error range, in degrees
@@ -68,35 +68,34 @@ void driverDriver() {
 	rightMotors.move(200);
 	leftMotors.move(200);
 
-	rightMotors.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-	leftMotors.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+	leftMotors.set_brake_mode_all(pros::E_MOTOR_BRAKE_BRAKE);
+	rightMotors.set_brake_mode_all(pros::E_MOTOR_BRAKE_BRAKE);
 
 	while(true) {
 		rightMotors.move_velocity((masterCont.get_analog(ANALOG_LEFT_Y)*1.575) - (masterCont.get_analog(ANALOG_RIGHT_X)*1.575));
 		leftMotors.move_velocity((masterCont.get_analog(ANALOG_LEFT_Y)*1.575) + (masterCont.get_analog(ANALOG_RIGHT_X)*1.575));
+		pros::delay(2);
 	}
 }
 
 // driver control, control clamp
-void driverClamp() {
-	mogoClamp.set_value(false);
-	
+void driverClamp() {	
 	while(true) {
 		waitUntill(masterCont.get_digital_new_press(DIGITAL_L1));
 		mogoClamp.set_value(true);
 		waitUntill(masterCont.get_digital_new_press(DIGITAL_L1));
 		mogoClamp.set_value(false);
+		pros::delay(2);
 	}
 }
 
-void driverSort() {
-	sortClamp.set_value(false);
-	
+void driverSort() {	
 	while(true) {
 		waitUntill(masterCont.get_digital_new_press(DIGITAL_L2));
 		sortClamp.set_value(true);
 		waitUntill(masterCont.get_digital_new_press(DIGITAL_L2));
 		sortClamp.set_value(false);
+		pros::delay(2);
 	}
 }
 
@@ -107,11 +106,14 @@ void driverHook() {
 	while(true) {
 		if(masterCont.get_digital(DIGITAL_R1)) {
 			conveyor.move_velocity(200);
+			pros::delay(2);
 		} else if(masterCont.get_digital(DIGITAL_R2)) {
 			conveyor.move_velocity(-200);
+			pros::delay(2);
 		}
 		else {
 			conveyor.move_velocity(0);
+			pros::delay(2);
 		}
 	}
 }
@@ -135,6 +137,38 @@ void autonDrive(float he, float ie, int jv) {
 	}
 }
 
+void autonLeft() {
+	rightMotors.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
+	leftMotors.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
+	autonDrive(-700, -700, 50);
+	mogoClamp.set_value(true);
+	pros::delay(1000);
+	conveyor.move_relative(2000, 200);
+	pros::delay(1000);
+	conveyor.move_relative(20000, 200);
+	autonDrive(250, -250, 50);
+	// autonDrive(330, -330, 50);
+	autonDrive(250, 250, 50);
+	autonDrive(-600, 600, 50);
+	autonDrive(700, 700, 50);
+}
+
+void autonRight() {
+	rightMotors.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
+	leftMotors.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
+	autonDrive(-700, -700, 50);
+	mogoClamp.set_value(true);
+	pros::delay(1000);
+	conveyor.move_relative(2000, 200);
+	pros::delay(1000);
+	conveyor.move_relative(20000, 200);
+	autonDrive(-250, 250, 50);
+	// autonDrive(-330, 330, 50);
+	autonDrive(250, 250, 50);
+	autonDrive(600, -600, 50);
+	autonDrive(700, 700, 50);
+}
+
 // initalize function, runs on program startup
 void initialize() {
 	pros::lcd::initialize(); // initalize brain screen
@@ -149,27 +183,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-	rightMotors.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-	leftMotors.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-
-	autonDrive(-600, -600, 50);
-
-	// rightMotors.move_relative(-1.5,50);
-	// leftMotors.move_relative(-1.5,50);
-
-	mogoClamp.set_value(true);
-
-	conveyor.move_relative(2000, 100);
-	pros::delay(1000);
-
-	conveyor.move_relative(20000, 100);
-	autonDrive(330, -330, 50);
-
-	autonDrive(360, 360, 50);
-
-	autonDrive(-600, 600, 50);
-
-	autonDrive(600, 600, 50);
+	autonLeft();
 }
 
 void opcontrol() {
