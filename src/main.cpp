@@ -8,6 +8,7 @@ pros::adi::DigitalOut sortClamp('G');
 pros::Imu imu(19);
 pros::Controller masterCont(CONTROLLER_MASTER);
 pros::MotorGroup conveyor({-9, 10}, pros::MotorGearset::green); // conveyor motors, green inserts
+pros::Optical optical(15);
 
 lemlib::Drivetrain drivetrain(&leftMotors, // left motor group
 							  &rightMotors, // right motor group
@@ -173,6 +174,8 @@ void autonRight() {
 void initialize() {
 	pros::lcd::initialize(); // initalize brain screen
 	chassis.calibrate(); // calibrate sensors
+
+	optical.set_led_pwm(100);
 
 	// print position to brain
 	pros::Task ws1(positionPrint);

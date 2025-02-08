@@ -258,7 +258,7 @@
       "description": "Oakdale 593C",
       "icon": "pizza",
       "slot": 1,
-      "after": "none"
+      "after": "run"
     },
     "use_early_access": false
   }
