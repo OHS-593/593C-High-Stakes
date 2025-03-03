@@ -8,6 +8,7 @@ pros::adi::DigitalOut sortClamp('G');
 pros::Imu imu(19);
 pros::Controller masterCont(CONTROLLER_MASTER);
 pros::MotorGroup conveyor({-9, 10}, pros::MotorGearset::green); // conveyor motors, green inserts
+pros::Motor walls(11, pros::MotorGearset::green); // wallstake motor
 pros::Optical optical(15);
 
 lemlib::Drivetrain drivetrain(&leftMotors, // left motor group
@@ -119,6 +120,26 @@ void driverHook() {
 	}
 }
 
+// driver control, control wallstakes
+void driverWall() {
+	walls.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
+	walls.move(200);
+
+	while(true) {
+		if(masterCont.get_digital(DIGITAL_B)) {
+			walls.move_velocity(100);
+			pros::delay(2);
+		} else if(masterCont.get_digital(DIGITAL_DOWN)) {
+			walls.move_velocity(-100);
+			pros::delay(2);
+		}
+		else {
+			walls.move_velocity(0);
+			pros::delay(2);
+		}
+	}
+}
+
 // auton drive controlls
 void autonDrive(float he, float ie, int jv) {
 	leftMotors.tare_position_all();
@@ -193,5 +214,6 @@ void opcontrol() {
 	pros::Task ws1(driverClamp);
 	pros::Task ws2(driverSort);
 	pros::Task ws3(driverHook);
+	pros::Task ws4(driverWall);
 	driverDriver();
 }
