@@ -13,7 +13,7 @@ pros::Optical optical(15);
 
 lemlib::Drivetrain drivetrain(&leftMotors, // left motor group
 							  &rightMotors, // right motor group
-							  14.25, // track width
+							  14.5, // track width
 							  lemlib::Omniwheel::NEW_325, // drivetrain omni wheel size
 							  333, // drivetrain rpm
 							  2 // horizontal drift
@@ -132,6 +132,25 @@ void driverWall() {
 		} else if(masterCont.get_digital(DIGITAL_DOWN)) {
 			walls.move_velocity(-100);
 			pros::delay(2);
+		/*} else if(masterCont.get_digital(DIGITAL_RIGHT)) {
+			walls.move_relative(-0.1, 100);
+			if (walls.get_position() < 1) {
+				walls.move_velocity(-100);
+			}
+			else {
+				walls.move_velocity(100);
+			}
+			while (!((walls.get_position() < 10) && (walls.get_position() > -10))) {
+				pros::delay(2);
+			}
+			pros::delay(2);*/
+		} else if(masterCont.get_digital(DIGITAL_Y)) {
+			walls.move_relative(0, 100);
+			walls.move_velocity(100);
+			while (!((walls.get_position() < 10) && (walls.get_position() > -10))) {
+				pros::delay(2);
+			}
+			pros::delay(2);
 		}
 		else {
 			walls.move_velocity(0);
@@ -191,10 +210,25 @@ void autonRight() {
 	autonDrive(700, 700, 50);
 }
 
+void autonSkills() {
+	chassis.moveToPoint(0, 0, 5000);
+	chassis.moveToPoint(0.168, 25.207, 5000);
+	chassis.moveToPoint(24.963, 27.193, 5000);
+	chassis.moveToPoint(51.576, 28.53, 5000);
+	chassis.moveToPoint(-0.139, 24.842, 5000);
+	chassis.moveToPoint(-36.07, -7.74, 5000);
+	chassis.moveToPoint(-51.912, 27.393, 5000);
+	chassis.moveToPoint(-61.373, 64.778, 5000);
+	chassis.moveToPoint(-49.374, 100.166, 5000);
+	chassis.moveToPoint(-5.266, 125.296, 5000);
+	chassis.moveToPoint(-89.87, 77.093, 5000);
+}
+
 // initalize function, runs on program startup
 void initialize() {
 	pros::lcd::initialize(); // initalize brain screen
 	chassis.calibrate(); // calibrate sensors
+	walls.tare_position(); // tare position of wallstake mech
 
 	optical.set_led_pwm(100);
 
